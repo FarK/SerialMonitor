@@ -1,6 +1,6 @@
 #include <QMetaType>
 #include <iostream>
-#include <QList>
+#include <QVector>
 #include <QString>
 #include "serialMonitor.h"
 #include "ui_serialMonitor.h"
@@ -10,21 +10,21 @@
 SerialMonitor::SerialMonitor(QWidget *parent) :
 	QMainWindow(parent),
 	ui(new Ui::SerialMonitor),
-	plotters()
+	plotters(3)
 {
 	ui->setupUi(this);
 	serial = new Serial("/dev/ttyUSB0", 9600);
 
-	QList<QString> names;
-	names.append(tr("x axis"));
-	names.append(tr("y axis"));
-	names.append(tr("z axis"));
+	QVector<QString> names(3);
+	names[0] = (tr("x axis"));
+	names[1] = (tr("y axis"));
+	names[2] = (tr("z axis"));
 
-	plotters.append(new Plotter(tr("Gyroscope"), names,this));
-	plotters.append(new Plotter(tr("Accelerometer"), names,this));
-	plotters.append(new Plotter(tr("Magnetometer"), names,this));
+	plotters[0] = (new Plotter(tr("Gyroscope"), names,this));
+	plotters[1] = (new Plotter(tr("Accelerometer"), names,this));
+	plotters[2] = (new Plotter(tr("Magnetometer"), names,this));
 
-	for (QList<Plotter*>::const_iterator i = plotters.constBegin(); i != plotters.constEnd(); ++i)
+	for (QVector<Plotter*>::const_iterator i = plotters.constBegin(); i != plotters.constEnd(); ++i)
 		ui->mdiArea->addSubWindow(*i);
 
 	qRegisterMetaType<Frame>("Frame");

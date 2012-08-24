@@ -21,7 +21,7 @@ class SerialMonitor : public QMainWindow
 	private:
 		Ui::SerialMonitor *ui;
 		Serial *serial;
-		QList<Plotter*> plotters;
+		QVector<Plotter*> plotters;
 	
 	private slots:
 		void newFrame(Frame frame);

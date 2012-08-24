@@ -22,7 +22,12 @@ class PlotterCore : public QCustomPlot
 
 		//Solo para ser llamada una vez. Establece el número de
 		//curvas del gráfico
-		void setNumOfGraphs(QList<QString> &names);
+		void setNumOfGraphs(QVector<QString> &names);
+	
+	private:
+		//Devuelve la coordenadas en Y de todas la curvas, para la
+		//coordenada X del ratón 
+		QVector<double> getYCoords(double xMouse);
 
 	public slots:
 		//Establece el autoTrack al valor de bool
@@ -44,11 +49,17 @@ class PlotterCore : public QCustomPlot
 		//Controla los ejes de arrastre según el eje seleccionado
 		void mousePress();
 
+		void mouseYCoord(QMouseEvent *event);
+
 	signals:
 		//Se envía cuándo cambia el valor de autoTrack
 		void autoTrackToggled(bool);
 		//Se envía cuándo cambia el valor de autoZoom
 		void autoZoomToggled(bool);
+		//Se envía cuando el ratón apunta a otras coordenadas
+		//Envía una lista con las coordenadas en Y de todas las curvas
+		//Si la coordenada Y no existe, devolvera +inf
+		void mouseYCoordChanged(QVector<double> yCoords);
 
 
 	//ATRIBUTOS
@@ -68,10 +79,13 @@ class PlotterCore : public QCustomPlot
 
 		//Los colores que se asignaran por orden a los primeras curvas
 		//que se dibujen
-		QVector<QPen> mainColors;
+		QVector<QColor> mainColors;
 
 		//Valores máximos y mínimos que toman las curvas en el eje Y
 		double maxY, minY;
+
+		QVector<double> *lastYCoords;
+		QVector<QCPItemTracer*> *tracers;
 };
 
 #endif

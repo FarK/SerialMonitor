@@ -4,15 +4,20 @@
 #include <QString>
 #include <QList>
 
-Plotter::Plotter(QString title, QList<QString> graphsNames, QWidget *parent) :
+Plotter::Plotter(QString title, QVector<QString> graphsNames, QWidget *parent) :
 	QWidget(parent),
 	ui(new Ui::Plotter)
 {
+	//Establecemos el diseño
 	ui->setupUi(this);
 	setWindowTitle(title);
+
+	//Definimos el número de curvas que tendrá el gráfico pasándole los
+	//nombres de cada una
 	ui->plotterCore->setNumOfGraphs(graphsNames);
 
-	QList<QString>::const_iterator name = graphsNames.constBegin();
+	//Creamos un lineEdit con su label por cada curva del gráfico
+	QVector<QString>::const_iterator name = graphsNames.constBegin();
 	for (int i = 0; name != graphsNames.constEnd(); ++name, ++i){
 		QLabel *label = new QLabel(ui->scrollAreaContents);
 
@@ -27,6 +32,10 @@ Plotter::Plotter(QString title, QList<QString> graphsNames, QWidget *parent) :
 		lineEdit->setReadOnly(true);
 		ui->formLayout->setWidget(i, QFormLayout::FieldRole, lineEdit);
 	}
+
+	//Establece el valor de los line edit
+	connect(ui->plotterCore, SIGNAL(mouseYCoordChanged(QVector<double>)),
+		this, SLOT(changeLinesEdit(QVector<double>)));
 }
 
 Plotter::~Plotter(){
@@ -34,10 +43,16 @@ Plotter::~Plotter(){
 }
 
 void Plotter::newData(double x, const QVector<double> ys){
-	for(int i = 0 ; i < ui->plotterCore->numOfGraphs ; ++i){
+	//Mandamos los nuevos datos a plotterCore
+	for(int i = 0 ; i < ui->plotterCore->numOfGraphs ; ++i)
 		ui->plotterCore->newData(i, x, ys[i]);
+}
 
-		((QLineEdit*)ui->formLayout-> itemAt(i,QFormLayout::FieldRole)-> widget())
-			->setText(QString::number(ys[i]));
-	}
+void Plotter::changeLinesEdit(QVector<double> yCoords){
+	//Recorremos los items del fromLayout cambiando el texto de sus
+	//lineEdit por las coordenadas correspondientes
+	QVector<double>::const_iterator yCoord = yCoords.constBegin();
+	for(int i = 0 ; yCoord != yCoords.constEnd(); ++yCoord, ++i)
+		((QLineEdit*)ui->formLayout->itemAt(i,QFormLayout::FieldRole)->widget())
+			->setText(QString::number(*yCoord));
 }

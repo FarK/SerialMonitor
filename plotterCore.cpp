@@ -4,6 +4,7 @@
 #include "myQAction.h"
 #include <QString>
 #include <QList>
+#include <QCursor>
 
 PlotterCore::PlotterCore(QWidget *parent) :
 	QCustomPlot(parent),
@@ -16,9 +17,9 @@ PlotterCore::PlotterCore(QWidget *parent) :
 	minY(std::numeric_limits<double>::max())
 {
 	//Añadimos los colores con los que se dibujarán las primeras curvas
-	mainColors[0] = QPen(QColor(Qt::red));
-	mainColors[1] = QPen(QColor(Qt::darkGreen));
-	mainColors[2] = QPen(QColor(Qt::blue));
+	mainColors[0] = QColor(Qt::red);
+	mainColors[1] = QColor(Qt::darkGreen);
+	mainColors[2] = QColor(Qt::blue);
 	
 	//Activamos las interacciones para mover, hacer zoom y seleccionar los ejes.
 	setInteractions(QCustomPlot::iRangeDrag |
@@ -48,15 +49,22 @@ PlotterCore::PlotterCore(QWidget *parent) :
 	// setup policy and connect slot for context menu popup:
 	setContextMenuPolicy(Qt::CustomContextMenu);
 	connect(this, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(contextMenuRequest(QPoint)));
+
+	connect(this, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(mouseYCoord(QMouseEvent*)));
 }
 
 PlotterCore::~PlotterCore(){
 	delete popup;
+	delete lastYCoords;
+	delete tracers;
 }
 
 void PlotterCore::newData(int graphNumber, double x, double y){
 	//Añadimos el nuevo dato
 	graph(graphNumber)->addData(x, y);
+		
+	//Guardamos las últimas coordenadas
+	(*lastYCoords)[graphNumber] = y;
 
 	//Si está activado el autoTrack, movemos el gráfico hasta que la curva esté en el centro
 	if(autoTrack){
@@ -73,6 +81,8 @@ void PlotterCore::newData(int graphNumber, double x, double y){
 		//Establecemos el rango a un 10% más del los límites
 		yAxis->setRange(minY - minY*0.1, maxY + maxY*0.1);
 	}
+
+	emit mouseYCoordChanged(getYCoords(mapFromGlobal(QCursor::pos()).x()));
 
 	//Redibujamos
 	replot();
@@ -92,25 +102,43 @@ void PlotterCore::actionClicked(int actionNumber, bool checked){
 		graph(actionNumber)->setVisible(false);
 }
 
-void PlotterCore::setNumOfGraphs(QList<QString> &names){
+void PlotterCore::setNumOfGraphs(QVector<QString> &names){
 	numOfGraphs = names.size();
 
+	//Inicializamos lastYCoords y tracers
+	lastYCoords = new QVector<double>(numOfGraphs);
+	tracers = new QVector<QCPItemTracer*>(3);
+
 	//Creamos tantas acciones del menú secuendario como número de curvas haya
-	QList<QString>::const_iterator name = names.constBegin();
+	QVector<QString>::const_iterator name = names.constBegin();
 	for (int i = 0; name != names.constEnd(); ++name, ++i)
 	{
 		//Añadimos la curva y establecemos su nombre
 		addGraph();
 		graph()->setName(*name);
 
+		//Añadimos el tracer
+		(*tracers)[i] = new QCPItemTracer(this);
+		tracers->value(i)->setGraph(graph());
+		addItem(tracers->value(i));
+		tracers->value(i)->setInterpolating(true);
+		tracers->value(i)->setStyle(QCPItemTracer::tsCircle);
+		tracers->value(i)->setSize(7);
+
 		//Establecemos los colores de las primeras curvas y luego les
 		//damos un valor aleatorio
-		if(i < mainColors.size())
-			graph()->setPen(mainColors[i]);
-		else
-			graph()->setPen(*new QPen(QColor(rand()%245+10,
-							rand()%245+10,
-							rand()%245+10)));
+		if(i < mainColors.size()){
+			graph()->setPen(QPen(mainColors[i]));
+			tracers->value(i)->setPen(QPen(mainColors[i]));
+			tracers->value(i)->setBrush(mainColors[i]);
+		}
+		else{
+			QColor randColor(rand()%245+10, rand()%245+10, rand()%245+10);
+
+			graph()->setPen(*new QPen(randColor));
+			tracers->value(i)->setPen(QPen(randColor));
+			tracers->value(i)->setBrush(randColor);
+		}
 
 
 		//Creamos una nueva acción y la añadimos al menú
@@ -196,4 +224,25 @@ void PlotterCore::setAutoZoom(bool checket){
 		minY = std::numeric_limits<double>::max();
 		maxY = std::numeric_limits<double>::min();
 	}
+}
+
+QVector<double> PlotterCore::getYCoords(double xMouse){
+	QVector<double> coords(numOfGraphs);
+	double xCoord = round(xAxis->pixelToCoord(xMouse));
+
+	for(int i = 0 ; i < numOfGraphs ; ++i){
+		if(graph(i)->data()->contains(xCoord))
+			coords[i] = (graph(i)->data()->value(xCoord).value);
+		else
+			coords[i] = (*lastYCoords)[i];
+
+		tracers->value(i)->setGraphKey(xCoord);
+	}
+
+
+	return coords;
+}
+
+void PlotterCore::mouseYCoord(QMouseEvent *event){
+	emit mouseYCoordChanged(getYCoords(event->x()));
 }
