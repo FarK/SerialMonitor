@@ -1,0 +1,12 @@
+#Archivos auxiliares de QT
+moc_*.cpp
+moc_*.h
+ui_*.h
+Makefile
+
+#Archivos de compilación
+*.o
+SerialMonitor
+
+#Archivos de vim
+*.swp
