@@ -248,4 +248,5 @@ QVector<double> PlotterCore::getYCoords(double xMouse){
 
 void PlotterCore::mouseYCoord(QMouseEvent *event){
 	emit mouseYCoordChanged(getYCoords(event->x()));
+	replot();
 }
