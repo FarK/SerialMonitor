@@ -1,7 +1,7 @@
 #include "plotterCore.h"
 #include <QWidget>
 #include <QPen>
-#include "myQAction.h"
+#include "checkableQAction.h"
 #include <QString>
 #include <QList>
 #include <QCursor>
@@ -146,7 +146,7 @@ void PlotterCore::setNumOfGraphs(QVector<QString> &names){
 
 
 		//Creamos una nueva acción y la añadimos al menú
-		myQAction *a = new myQAction(i,*name,popup);
+		checkableQAction *a = new checkableQAction(i,*name,popup);
 		a->setCheckable(true);
 		a->setChecked(true);
 

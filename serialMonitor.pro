@@ -21,14 +21,14 @@ SOURCES += main.cpp\
 	plotterCore.cpp \
 	qcustomplot.cpp \
 	serial.cpp \
-	myQAction.cpp
+	checkableQAction.cpp
 
 HEADERS  += plotter.h \
 	serialMonitor.h \
 	plotterCore.h \
 	qcustomplot.h \
 	serial.h \
-	myQAction.h \
+	checkableQAction.h \
 
 FORMS    += plotterDesign.ui \
 	serialMonitor.ui

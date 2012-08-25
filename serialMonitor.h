@@ -2,6 +2,7 @@
 #define SERIAL_MONITOR_H
 
 #include <QMainWindow>
+#include <QAction>
 #include "plotter.h"
 #include "serial.h"
 #include "frame.h"

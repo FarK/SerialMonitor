@@ -1,14 +1,14 @@
-#ifndef MYQACTION_H
-#define MYQACTION_H
+#ifndef CHECKABLE_QACTION_H
+#define CHECKABLE_QACTION_H
 
 #include <QObject> 
 #include <QAction> 
 
-class myQAction : public QAction{
+class checkableQAction : public QAction{
 	Q_OBJECT
 
 	public:
-		myQAction(int number, const QString & text, QObject * parent);
+		checkableQAction(int number, const QString & text, QObject * parent);
 
 		int number;
 	
