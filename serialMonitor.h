@@ -36,6 +36,7 @@ class SerialMonitor : public QMainWindow
 		QVector<QString> axesNames;
 		QString serialPort;
 		int baudRate;
+		void closeEvent(QCloseEvent *event);
 };
 
 #endif

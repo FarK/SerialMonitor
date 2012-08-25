@@ -57,6 +57,13 @@ SerialMonitor::~SerialMonitor(){
 	delete ui;
 }
 
+//Desconectamos el puerto serie antes de salir
+void SerialMonitor::closeEvent(QCloseEvent *event){
+	serial.disconnect();
+	while(serial.isRunning());
+	event->accept();
+}
+
 void SerialMonitor::connectSerial(){
 	//Conectando
 	ui->connectButton->setDisabled(true);
@@ -94,6 +101,7 @@ void SerialMonitor::connectSerial(){
 
 void SerialMonitor::disconnectSerial(){
 	serial.disconnect();
+	while(serial.isRunning());
 }
 
 void SerialMonitor::setSerialPort(const QString &sPort){
