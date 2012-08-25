@@ -147,7 +147,6 @@ void PlotterCore::setNumOfGraphs(QVector<QString> &names){
 
 		//Creamos una nueva acción y la añadimos al menú
 		checkableQAction *a = new checkableQAction(i,*name,popup);
-		a->setCheckable(true);
 		a->setChecked(true);
 
 		popup->addAction(a);

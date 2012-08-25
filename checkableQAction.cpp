@@ -5,6 +5,7 @@
 checkableQAction::checkableQAction(int num, const QString & text, QObject * parent) :
 	QAction(text, parent), number(num)
 {
+	setCheckable(true);
 	connect(this, SIGNAL(toggled(bool)), this, SLOT(toggleDetect(bool)));
 }
 
