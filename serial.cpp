@@ -18,7 +18,6 @@ Serial::Serial() : port(io)
 
 Serial::~Serial(){
 	if(port.is_open()) port.close();
-	exit(0);
 }
 
 void Serial::connect(const std::string &portname, unsigned int baudRate){
