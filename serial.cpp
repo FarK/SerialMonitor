@@ -6,12 +6,8 @@
 
 using namespace boost::asio;
 
-Serial::Serial(const std::string& portname, unsigned int baudRate) :
-	port(io, portname)
+Serial::Serial() : port(io)
 {
-	//Configuramos los parámetros de la conexión
-	port.set_option(serial_port_base::baud_rate(baudRate));
-
 	//Inicializamos la máquina de estados
 	stMach.state = WAIT_STX;
 	stMach.buffCounter = 2*sizeof(Frame)+1;
@@ -21,12 +17,31 @@ Serial::Serial(const std::string& portname, unsigned int baudRate) :
 }
 
 Serial::~Serial(){
-	port.close();
+	if(port.is_open()) port.close();
 	exit(0);
 }
 
+void Serial::connect(const std::string &portname, unsigned int baudRate){
+	//Abrimos la conexión
+	try{
+		if(!port.is_open()) port.open(portname);
+	}
+	catch(...){
+		throw;
+	}
+
+	//Configuramos los parámetros de la conexión
+	if(port.is_open())
+		port.set_option(serial_port_base::baud_rate(baudRate));
+}
+
+void Serial::disconnect(){
+	port.close();
+	terminate();
+}
+
 void Serial::run(){
-	while(1){
+	while(port.is_open()){
 		stMach.buffCounter = read(port, buffer(readBuff, 2*sizeof(Frame)+1));
 		stMach.pBuffer = readBuff;
 

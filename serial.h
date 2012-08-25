@@ -14,6 +14,18 @@ const unsigned char DLE = 0x64;
 class Serial : public QThread{
 	Q_OBJECT
 
+	public:
+		Serial();
+		~Serial();
+
+		void connect(const std::string &portname = "/dev/ttyUSB0", unsigned int baudRate = 9600);
+		void disconnect();
+		void frameToHex(Frame* f);
+		void trataLaTrama(Frame* f);
+
+	signals:
+		void newFrame(Frame frame);
+
 	private:
 		//Estructuras con todo lo que va a usar la máquina de estados
 		typedef enum {WAIT_STX, RECIEVING_FRAME}State; 
@@ -25,24 +37,16 @@ class Serial : public QThread{
 			unsigned char* pFrame;		//Puntero a la trama
 		}stMach;
 
-		//Clases necesarias para la comunicación serie
-		boost::asio::io_service io;
-		boost::asio::serial_port port;
-
 		//Trama recibida y buffer de lectura
 		Frame frame;
 		unsigned char readBuff[2*sizeof(Frame) + 1];	//Con este tamaño se asegura que se reciba una trama entera
 		void run();
 
 	public:
-		Serial(const std::string& portname, unsigned int baudRate);
-		~Serial();
+		//Clases necesarias para la comunicación serie
+		boost::asio::io_service io;
+		boost::asio::serial_port port;
 
-		void frameToHex(Frame* f);
-		void trataLaTrama(Frame* f);
-
-	signals:
-		void newFrame(Frame frame);
 };
 
 #endif
