@@ -5,6 +5,7 @@
 #include <QString>
 #include <boost/asio.hpp>
 #include <boost/exception/all.hpp>
+#include "checkableQAction.h"
 #include "serialMonitor.h"
 #include "ui_serialMonitor.h"
 #include "serial.h"
@@ -27,20 +28,28 @@ SerialMonitor::SerialMonitor(QWidget *parent) :
 	subWindows[0] = new QMdiSubWindow;
 	subWindows[1] = new QMdiSubWindow;
 	subWindows[2] = new QMdiSubWindow;
-	//Eliminamos el botón de cerrar de las sub-ventanas
-	//TODO:Si se pueden cerrar hacer que se puedan abrir de nuevo
-	//subWindows[0]->setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowMinimizeButtonHint);
-	//subWindows[1]->setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowMinimizeButtonHint);
-	//subWindows[2]->setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowMinimizeButtonHint);
 
 	//Creamos las gráficas
 	subWindows[0]->setWidget(new Plotter(tr("Gyroscope"), axesNames,this));
 	subWindows[1]->setWidget(new Plotter(tr("Accelerometer"), axesNames,this));
 	subWindows[2]->setWidget(new Plotter(tr("Magnetometer"), axesNames,this));
+	//TODO: No se pueden cerrar
+	//Desabilitamos cerrar, junto con minimizar y maximizar
+	//subWindows[0]->setWindowFlags(Qt::CustomizeWindowHint);
+	//subWindows[1]->setWindowFlags(Qt::CustomizeWindowHint);
+	//subWindows[2]->setWindowFlags(Qt::CustomizeWindowHint);
 
-	//Añadimos las gráficas al mdi
+	//Añadimos las gráficas al mdi y al menu
 	for(int i = 0 ; i < subWindows.size() ; ++i){
 		ui->mdiArea->addSubWindow(subWindows[i]);
+
+		//Creamos la acción y la añadimos al menu
+		checkableQAction *a = new checkableQAction(0, subWindows[i]->windowTitle(), this);
+		a->setChecked(true);
+		//Conectamos la señal de la acción
+		connect(a, SIGNAL(toggledNum(int,bool)), this, SLOT(menuWindowsAction(int,bool)));
+		ui->menuWindows->addAction(a);
+
 		subWindows[i]->show();
 	}
 
@@ -147,4 +156,8 @@ void SerialMonitor::disconnectedSerial(){
 
 	ui->connectButton->setEnabled(true);
 	ui->connectButton->setText(tr("Connect"));
+}
+
+void SerialMonitor::menuWindowsAction(int numAction, bool checked){
+	subWindows[numAction]->setVisible(checked);
 }

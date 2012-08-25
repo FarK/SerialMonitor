@@ -61,6 +61,18 @@
      <height>19</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menuSelect_serial_port">
+    <property name="title">
+     <string>Select serial port</string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menuWindows">
+    <property name="title">
+     <string>Windows</string>
+    </property>
+   </widget>
+   <addaction name="menuSelect_serial_port"/>
+   <addaction name="menuWindows"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>

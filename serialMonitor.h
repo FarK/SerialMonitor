@@ -29,6 +29,8 @@ class SerialMonitor : public QMainWindow
 		void newFrame(Frame frame);
 		void connectedSerial();
 		void disconnectedSerial();
+		void menuWindowsAction(int numAction, bool checked);
+		//void menuSerialPortAction(int numAction, bool checked);
 
 	private:
 		Ui::SerialMonitor *ui;
