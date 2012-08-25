@@ -96,10 +96,14 @@ void PlotterCore::contextMenuRequest(QPoint pos)
 
 void PlotterCore::actionClicked(int actionNumber, bool checked){
 	//Si la curva está seleccionada la ponemos como visible
-	if(checked)
+	if(checked){
 		graph(actionNumber)->setVisible(true);
-	else
+		tracers->value(actionNumber)->setVisible(true);
+	}
+	else{
 		graph(actionNumber)->setVisible(false);
+		tracers->value(actionNumber)->setVisible(false);
+	}
 }
 
 void PlotterCore::setNumOfGraphs(QVector<QString> &names){
