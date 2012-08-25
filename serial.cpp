@@ -41,7 +41,12 @@ void Serial::disconnect(){
 
 void Serial::run(){
 	while(port.is_open()){
-		stMach.buffCounter = read(port, buffer(readBuff, 2*sizeof(Frame)+1));
+		try{
+			stMach.buffCounter = read(port, buffer(readBuff, 2*sizeof(Frame)+1));
+		}catch(std::exception &e){
+			emit readException(e.what());
+			terminate();
+		}
 		stMach.pBuffer = readBuff;
 
 		while(stMach.buffCounter > 0){
@@ -82,7 +87,12 @@ void Serial::run(){
 							++stMach.pBuffer;
 							//Si DLE es el último caracter del buffer hay que leer de nuevo
 							if(!--stMach.buffCounter){
-								stMach.buffCounter = read(port, buffer(readBuff, 2*sizeof(Frame)+1));
+								try{
+									stMach.buffCounter = read(port, buffer(readBuff, 2*sizeof(Frame)+1));
+								}catch(std::exception &e){
+									emit readException(e.what());
+									terminate();
+								}
 								stMach.pBuffer = readBuff;
 							}
 						default:

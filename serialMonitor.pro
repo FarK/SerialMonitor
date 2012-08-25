@@ -21,7 +21,8 @@ SOURCES += main.cpp\
 	plotterCore.cpp \
 	qcustomplot.cpp \
 	serial.cpp \
-	checkableQAction.cpp
+	checkableQAction.cpp \
+	serialPortsQMenu.cpp
 
 HEADERS  += plotter.h \
 	serialMonitor.h \
@@ -29,6 +30,7 @@ HEADERS  += plotter.h \
 	qcustomplot.h \
 	serial.h \
 	checkableQAction.h \
+	serialPortsQMenu.h
 
 FORMS    += plotterDesign.ui \
 	serialMonitor.ui

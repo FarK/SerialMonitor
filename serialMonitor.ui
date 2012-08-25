@@ -61,7 +61,7 @@
      <height>19</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menuSelect_serial_port">
+   <widget class="serialPortsQMenu" name="menuSerialPorts">
     <property name="title">
      <string>Select serial port</string>
     </property>
@@ -71,11 +71,21 @@
      <string>Windows</string>
     </property>
    </widget>
-   <addaction name="menuSelect_serial_port"/>
+   <addaction name="menuSerialPorts"/>
    <addaction name="menuWindows"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>serialPortsQMenu</class>
+   <extends>QMenu</extends>
+   <header>serialPortsQMenu.h</header>
+   <slots>
+    <signal>portChanged(QString)</signal>
+   </slots>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections>
   <connection>
@@ -97,5 +107,6 @@
  </connections>
  <slots>
   <slot>connectSerial()</slot>
+  <slot>setSerialPort(QString)</slot>
  </slots>
 </ui>

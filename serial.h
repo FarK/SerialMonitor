@@ -25,6 +25,7 @@ class Serial : public QThread{
 
 	signals:
 		void newFrame(Frame frame);
+		void readException(QString);
 
 	private:
 		//Estructuras con todo lo que va a usar la máquina de estados

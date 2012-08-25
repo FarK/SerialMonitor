@@ -2,6 +2,7 @@
 #include <iostream>
 #include <QVector>
 #include <QMessageBox>
+#include <QDir>
 #include <QString>
 #include <boost/asio.hpp>
 #include <boost/exception/all.hpp>
@@ -10,14 +11,22 @@
 #include "ui_serialMonitor.h"
 #include "serial.h"
 #include "frame.h"
+#include "serialPortsQMenu.h"
 
 SerialMonitor::SerialMonitor(QWidget *parent) :
 	QMainWindow(parent),
 	ui(new Ui::SerialMonitor),
 	subWindows(3),
-	axesNames(3)
+	axesNames(3),
+	baudRate(9600)
 {
 	ui->setupUi(this);
+
+	//Establecemos el primer puerto encontrado como puerto de conexión
+	setSerialPort(ui->menuSerialPorts->getDefaultPort());
+
+	//El QtDesigner no la crea automáticamente
+	connect(ui->menuSerialPorts, SIGNAL(portChanged(QString)), this, SLOT(setSerialPort(QString)));
 
 	//Inicializamos los nombres de los ejes de cada curva
 	axesNames[0] = (tr("x axis"));
@@ -44,7 +53,7 @@ SerialMonitor::SerialMonitor(QWidget *parent) :
 		ui->mdiArea->addSubWindow(subWindows[i]);
 
 		//Creamos la acción y la añadimos al menu
-		checkableQAction *a = new checkableQAction(0, subWindows[i]->windowTitle(), this);
+		checkableQAction *a = new checkableQAction(i, subWindows[i]->windowTitle(), this);
 		a->setChecked(true);
 		//Conectamos la señal de la acción
 		connect(a, SIGNAL(toggledNum(int,bool)), this, SLOT(menuWindowsAction(int,bool)));
@@ -57,6 +66,7 @@ SerialMonitor::SerialMonitor(QWidget *parent) :
 	connect(&serial, SIGNAL(started()), this, SLOT(connectedSerial()));
 	connect(&serial, SIGNAL(finished()), this, SLOT(disconnectedSerial()));
 	connect(&serial, SIGNAL(terminated()), this, SLOT(disconnectedSerial()));
+	connect(&serial, SIGNAL(readException(QString)), this, SLOT(readException(QString)));
 	//Conectamos la señal de nueva trama para recoger las tramas
 	qRegisterMetaType<Frame>("Frame");
 	connect(&serial, SIGNAL(newFrame(Frame)), this, SLOT(newFrame(Frame)));
@@ -80,7 +90,7 @@ void SerialMonitor::connectSerial(){
 
 	//Intentamos conectar
 	try{
-		serial.connect();
+		serial.connect(serialPort.toStdString(), baudRate);
 	}
 	catch(std::exception &e){
 		QMessageBox(QMessageBox::Warning,
@@ -98,13 +108,17 @@ void SerialMonitor::connectSerial(){
 	}
 
 	if(serial.port.is_open()){
-		serial.start();
-		
+		try{
+			serial.start();
+		}
+		catch(...){
+			std::cout << "Desconectado" << std::endl;
+		}
 	}
 	else{
 		//Desconectado
 		ui->connectButton->setEnabled(true);
-		ui->connectButton->setText(tr("Connect"));
+		setSerialPort(serialPort);
 	}
 }
 
@@ -113,12 +127,32 @@ void SerialMonitor::disconnectSerial(){
 	while(serial.isRunning());
 }
 
-void SerialMonitor::setSerialPort(const QString &sPort){
+void SerialMonitor::setSerialPort(QString sPort){
 	serialPort = sPort;
+
+	if(sPort == ""){
+		ui->connectButton->setText(tr("No port"));
+		ui->connectButton->setDisabled(true);
+	}
+	else{
+		ui->connectButton->setText(tr("Connect to %1").arg(serialPort));
+		ui->connectButton->setEnabled(true);
+	}
 }
 
 void SerialMonitor::setBaudRate(int bRate){
 	baudRate = bRate;
+}
+
+void SerialMonitor::readException(QString what){
+	disconnectSerial();
+	setSerialPort(ui->menuSerialPorts->getDefaultPort());
+
+	QMessageBox(QMessageBox::Critical,
+			tr("Read error"),
+			what,
+			QMessageBox::Ok
+		   ).exec();
 }
 
 void SerialMonitor::newFrame(Frame frame){
@@ -154,10 +188,11 @@ void SerialMonitor::disconnectedSerial(){
 	connect(ui->connectButton, SIGNAL(clicked()), this, SLOT(connectSerial()));
 	disconnect(ui->connectButton, SIGNAL(clicked()), this, SLOT(disconnectSerial()));
 
-	ui->connectButton->setEnabled(true);
-	ui->connectButton->setText(tr("Connect"));
+	setSerialPort(serialPort);
 }
 
 void SerialMonitor::menuWindowsAction(int numAction, bool checked){
 	subWindows[numAction]->setVisible(checked);
+	if(checked)
+		subWindows[numAction]->widget()->show();
 }
